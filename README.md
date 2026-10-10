@@ -20,6 +20,8 @@ cmake --build build
 
 O build MinGW inclui estaticamente o runtime C++ do cliente. Após a compilação, `windeployqt` copia as DLLs e plugins Qt, e o CMake também inclui dependências transitivas do Qt e do MinGW ao lado do aplicativo. Com MinGW, os executáveis serão `build\server\D1AssistServer.exe` e `build\D1Assist.exe`; o Visual Studio adiciona o diretório da configuração, normalmente `Debug`.
 
+O logotipo em `resources\D1AssistLogo.png` é distribuído ao lado do cliente para o ícone da janela Qt; `resources\D1Assist.ico` define o ícone incorporado aos executáveis Windows do cliente e do servidor.
+
 ## Executar o primeiro marco
 
 Em um terminal, inicie o servidor (ajuste o caminho se estiver usando Visual Studio):

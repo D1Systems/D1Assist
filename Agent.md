@@ -670,6 +670,8 @@ GCC ou Clang
 
 O D1Assist sempre deverá possuir interface gráfica. A GUI faz parte do produto desde o primeiro marco e deve acompanhar toda funcionalidade nova; não criar etapas funcionais que dependam de interação pelo console.
 
+Usar o logotipo oficial em `resources/D1AssistLogo.png` como ícone da janela Qt e o ícone Windows `resources/D1Assist.ico` nos executáveis D1Assist e D1AssistServer.
+
 Utilizar Qt 6 e criar uma interface inicial simples semelhante a:
 
 ```text
@@ -695,8 +697,12 @@ Utilizar Qt 6 e criar uma interface inicial simples semelhante a:
 │  [____________]                    │
 │                                    │
 │       [ Conectar ]                 │
+│                                    │
+│       Desenvolvido por D1Systems  │
 └────────────────────────────────────┘
 ```
+
+Exibir "Desenvolvido por D1Systems" no rodapé da janela principal do aplicativo.
 
 Durante o desenvolvimento, controles de funcionalidades ainda não implementadas devem aparecer desabilitados ou explicar seu estado; não substituir a GUI por comandos de console.
 

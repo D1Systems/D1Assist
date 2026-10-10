@@ -3,6 +3,10 @@ add_executable(D1AssistServer
     src/device_registry.cpp
 )
 
+if(WIN32)
+    target_sources(D1AssistServer PRIVATE ../resources/D1Assist.rc)
+endif()
+
 target_include_directories(D1AssistServer PRIVATE src)
 target_link_libraries(D1AssistServer PRIVATE d1assist_core)
 

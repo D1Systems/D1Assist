@@ -8,6 +8,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(Qt6 6.2 REQUIRED COMPONENTS Widgets)
 
+if(WIN32)
+    enable_language(RC)
+endif()
+
 if(MINGW)
     add_link_options(-static -static-libgcc -static-libstdc++)
 endif()
@@ -42,7 +46,19 @@ qt_add_executable(D1Assist WIN32
     src/app/main_window.cpp
     src/app/main_window.h
 )
+if(WIN32)
+    target_sources(D1Assist PRIVATE resources/D1Assist.rc)
+endif()
 target_link_libraries(D1Assist PRIVATE d1assist_core Qt6::Widgets)
+add_custom_command(
+    TARGET D1Assist
+    POST_BUILD
+    COMMAND
+        "${CMAKE_COMMAND}" -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/resources/D1AssistLogo.png"
+        "$<TARGET_FILE_DIR:D1Assist>/D1AssistLogo.png"
+    VERBATIM
+)
 
 if(WIN32)
     get_filename_component(D1ASSIST_QT_PREFIX "${Qt6_DIR}/../../.." ABSOLUTE)

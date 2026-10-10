@@ -3,6 +3,7 @@
 #include "d1assist/identity/device_identity.h"
 
 #include <QApplication>
+#include <QIcon>
 #include <QMessageBox>
 #include <QStringList>
 
@@ -45,6 +46,9 @@ int main(int argc, char* argv[])
     QApplication application(argc, argv);
     QCoreApplication::setApplicationName("D1Assist");
     QCoreApplication::setOrganizationName("D1Systems");
+    application.setWindowIcon(
+        QIcon(QCoreApplication::applicationDirPath() + "/D1AssistLogo.png")
+    );
 
     try
     {
