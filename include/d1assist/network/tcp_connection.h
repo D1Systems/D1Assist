@@ -25,6 +25,7 @@ public:
     bool isOpen() const noexcept;
     void sendAll(std::span<const std::uint8_t> data);
     bool receiveAll(std::span<std::uint8_t> data);
+    void shutdown() noexcept;
     void close() noexcept;
 
 private:

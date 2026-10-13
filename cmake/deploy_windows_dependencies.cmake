@@ -15,8 +15,22 @@ set(scan_libraries
    "${D1ASSIST_QT_BIN_DIRECTORY}/../share/qt6/plugins/platforms/qwindows.dll"
 )
 
+set(deployed_plugins)
+foreach(plugin_directory IN ITEMS
+        generic
+        imageformats
+        networkinformation
+        platforms
+        styles
+        tls)
+    file(GLOB_RECURSE plugin_files
+        "${D1ASSIST_DEPLOY_DIRECTORY}/${plugin_directory}/*.dll"
+    )
+    list(APPEND deployed_plugins ${plugin_files})
+endforeach()
+
 file(GET_RUNTIME_DEPENDENCIES
-   LIBRARIES ${scan_libraries}
+   LIBRARIES ${scan_libraries} ${deployed_plugins}
     DIRECTORIES ${D1ASSIST_RUNTIME_DIRECTORIES}
     PRE_EXCLUDE_REGEXES "api-ms-win-.*" "ext-ms-win-.*" "AzureAttest.*\\.dll"
     RESOLVED_DEPENDENCIES_VAR resolved_dependencies

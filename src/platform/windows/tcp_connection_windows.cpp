@@ -196,6 +196,14 @@ bool TcpConnection::receiveAll(std::span<std::uint8_t> data)
     return true;
 }
 
+void TcpConnection::shutdown() noexcept
+{
+    if (isOpen())
+    {
+        ::shutdown(impl_->socket, SD_BOTH);
+    }
+}
+
 void TcpConnection::close() noexcept
 {
     if (impl_ != nullptr)

@@ -45,11 +45,16 @@ qt_add_executable(D1Assist WIN32
     src/app/main.cpp
     src/app/main_window.cpp
     src/app/main_window.h
+    src/app/remote_viewer.cpp
+    src/app/remote_viewer.h
 )
 if(WIN32)
     target_sources(D1Assist PRIVATE resources/D1Assist.rc)
 endif()
 target_link_libraries(D1Assist PRIVATE d1assist_core Qt6::Widgets)
+if(WIN32)
+    target_link_libraries(D1Assist PRIVATE user32)
+endif()
 add_custom_command(
     TARGET D1Assist
     POST_BUILD
@@ -58,6 +63,9 @@ add_custom_command(
         "${CMAKE_CURRENT_SOURCE_DIR}/resources/D1AssistLogo.png"
         "$<TARGET_FILE_DIR:D1Assist>/D1AssistLogo.png"
     VERBATIM
+)
+set_property(TARGET D1Assist APPEND PROPERTY LINK_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/deploy_windows_dependencies.cmake"
 )
 
 if(WIN32)
