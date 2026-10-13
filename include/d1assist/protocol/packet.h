@@ -20,8 +20,10 @@ class PacketWriter
 {
 public:
     void writeUInt16(std::uint16_t value);
+    void writeUInt32(std::uint32_t value);
     void writeUInt64(std::uint64_t value);
     void writeString(const std::string& value);
+    void writeBytes(std::span<const std::uint8_t> value);
 
     const std::vector<std::uint8_t>& data() const noexcept;
 
@@ -35,8 +37,10 @@ public:
     explicit PacketReader(std::span<const std::uint8_t> data) noexcept;
 
     std::uint16_t readUInt16();
+    std::uint32_t readUInt32();
     std::uint64_t readUInt64();
     std::string readString(std::size_t maximumLength = 128);
+    std::vector<std::uint8_t> readBytes(std::size_t maximumLength = 1024U * 1024U);
     bool empty() const noexcept;
 
 private:

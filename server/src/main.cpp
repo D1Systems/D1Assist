@@ -1,4 +1,5 @@
 #include "device_registry.h"
+#include "broker.h"
 
 #include "d1assist/network/tcp_connection.h"
 #include "d1assist/protocol/packet.h"
@@ -40,18 +41,20 @@ std::uint16_t parsePort(const char* value)
 }
 
 void handleClient(
-    d1assist::network::TcpConnection connection,
+    std::shared_ptr<d1assist::network::TcpConnection> connection,
     const std::shared_ptr<DeviceRegistry>& registry,
+    const std::shared_ptr<Broker>& broker,
     std::uint64_t connectionId
 )
 {
     std::uint64_t registeredPublicId = 0;
     bool markedOnline = false;
+    std::shared_ptr<Broker::Peer> peer;
 
     try
     {
         d1assist::protocol::Packet packet{};
-        if (!d1assist::protocol::receivePacket(connection, packet))
+        if (!d1assist::protocol::receivePacket(*connection, packet))
         {
             return;
         }
@@ -74,7 +77,7 @@ void handleClient(
         response.writeUInt16(markedOnline ? 0 : 1);
         response.writeUInt64(registeredPublicId);
         d1assist::protocol::sendPacket(
-            connection,
+            *connection,
             d1assist::protocol::MessageType::RegisterDeviceResponse,
             response.data()
         );
@@ -85,16 +88,27 @@ void handleClient(
             return;
         }
 
+        peer = std::make_shared<Broker::Peer>();
+        peer->publicId = registeredPublicId;
+        peer->connectionId = connectionId;
+        peer->connection = std::move(connection);
+        broker->addPeer(peer);
+
         logLine("Device registered and online. Public ID: " + std::to_string(registeredPublicId));
 
-        while (d1assist::protocol::receivePacket(connection, packet))
+        while (d1assist::protocol::receivePacket(*peer->connection, packet))
         {
-            throw std::runtime_error("This server version only supports device registration.");
+            broker->handlePacket(peer, packet);
         }
     }
     catch (const std::exception& error)
     {
         logLine(std::string("Client connection error: ") + error.what());
+    }
+
+    if (peer)
+    {
+        broker->removePeer(peer);
     }
 
     if (markedOnline)
@@ -128,6 +142,7 @@ int main(int argc, char* argv[])
             : std::filesystem::path("server-data") / "devices.db";
 
         auto registry = std::make_shared<DeviceRegistry>(registryPath);
+        auto broker = std::make_shared<Broker>();
         d1assist::network::TcpListener listener;
         listener.listen("127.0.0.1", port);
 
@@ -142,8 +157,9 @@ int main(int argc, char* argv[])
             const auto connectionId = nextConnectionId.fetch_add(1);
             std::thread(
                 handleClient,
-                std::move(connection),
+                std::make_shared<d1assist::network::TcpConnection>(std::move(connection)),
                 registry,
+                broker,
                 connectionId
             ).detach();
         }

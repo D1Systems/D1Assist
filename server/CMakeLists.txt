@@ -1,6 +1,8 @@
 add_executable(D1AssistServer
     src/main.cpp
     src/device_registry.cpp
+    src/broker.cpp
+    src/broker.h
 )
 
 if(WIN32)

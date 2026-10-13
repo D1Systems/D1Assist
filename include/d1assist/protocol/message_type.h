@@ -13,6 +13,7 @@ enum class MessageType : std::uint16_t
     ConnectRequest = 20,
     IncomingConnection = 21,
     ConnectRejected = 22,
+    ConnectionResponse = 23,
     AuthRequest = 30,
     AuthResponse = 31,
     AuthAccepted = 32,

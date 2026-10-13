@@ -25,6 +25,7 @@ bool isKnownMessageType(std::uint16_t value)
     case MessageType::ConnectRequest:
     case MessageType::IncomingConnection:
     case MessageType::ConnectRejected:
+    case MessageType::ConnectionResponse:
     case MessageType::AuthRequest:
     case MessageType::AuthResponse:
     case MessageType::AuthAccepted:
@@ -82,6 +83,13 @@ void PacketWriter::writeUInt16(std::uint16_t value)
     writeBigEndian(std::span<std::uint8_t>(data_), offset, value, 2);
 }
 
+void PacketWriter::writeUInt32(std::uint32_t value)
+{
+    const auto offset = data_.size();
+    data_.resize(offset + 4);
+    writeBigEndian(std::span<std::uint8_t>(data_), offset, value, 4);
+}
+
 void PacketWriter::writeUInt64(std::uint64_t value)
 {
     const auto offset = data_.size();
@@ -97,6 +105,17 @@ void PacketWriter::writeString(const std::string& value)
     }
 
     writeUInt16(static_cast<std::uint16_t>(value.size()));
+    data_.insert(data_.end(), value.begin(), value.end());
+}
+
+void PacketWriter::writeBytes(std::span<const std::uint8_t> value)
+{
+    if (value.size() > std::numeric_limits<std::uint32_t>::max())
+    {
+        throw std::length_error("Protocol byte arrays cannot exceed 4294967295 bytes.");
+    }
+
+    writeUInt32(static_cast<std::uint32_t>(value.size()));
     data_.insert(data_.end(), value.begin(), value.end());
 }
 
@@ -126,6 +145,14 @@ std::uint16_t PacketReader::readUInt16()
     return value;
 }
 
+std::uint32_t PacketReader::readUInt32()
+{
+    require(4);
+    const auto value = static_cast<std::uint32_t>(readBigEndian(data_, offset_, 4));
+    offset_ += 4;
+    return value;
+}
+
 std::uint64_t PacketReader::readUInt64()
 {
     require(8);
@@ -145,6 +172,21 @@ std::string PacketReader::readString(std::size_t maximumLength)
 
     const auto* begin = reinterpret_cast<const char*>(data_.data() + offset_);
     std::string value(begin, begin + length);
+    offset_ += length;
+    return value;
+}
+
+std::vector<std::uint8_t> PacketReader::readBytes(std::size_t maximumLength)
+{
+    const auto length = readUInt32();
+    if (length > maximumLength)
+    {
+        throw std::runtime_error("The packet byte array exceeds its allowed length.");
+    }
+    require(length);
+
+    const auto begin = data_.begin() + static_cast<std::ptrdiff_t>(offset_);
+    std::vector<std::uint8_t> value(begin, begin + length);
     offset_ += length;
     return value;
 }

@@ -364,6 +364,7 @@ enum class MessageType : std::uint16_t
     ConnectRequest = 20,
     IncomingConnection = 21,
     ConnectRejected = 22,
+    ConnectionResponse = 23,
 
     AuthRequest = 30,
     AuthResponse = 31,
@@ -649,6 +650,8 @@ No Windows:
 cmake -S . -B build
 cmake --build build --config Debug
 ```
+
+O pacote portátil ZIP para Windows inclui o cliente, o servidor e as dependências de runtime. Use CPack localmente; tags `v*` publicam o ZIP em uma GitHub Release.
 
 Compiladores:
 
@@ -1311,6 +1314,9 @@ PC B informa:
 
 Servidor localiza o PC A.
 
+Implementado para teste local: o broker aceita uma única solicitação por dispositivo e
+recusa IDs offline, auto-conexões e dispositivos ocupados.
+
 ---
 
 # 42. Fase 3 — Autenticação
@@ -1326,6 +1332,10 @@ AuthDenied
 
 Somente criar sessão após senha correta.
 
+O dispositivo chamado deve aceitar explicitamente cada solicitação antes do envio da
+senha. A senha temporária é validada no cliente controlado; uma senha incorreta não cria
+sessão.
+
 ---
 
 # 43. Fase 4 — Sessão
@@ -1339,6 +1349,9 @@ session_id
 RemoteSession
 ```
 
+Implementado pelo relay inicial. Ambos os clientes mostram o estado da sessão e podem
+encerrá-la; fechar uma das conexões também encerra a sessão no outro cliente.
+
 ---
 
 # 44. Fase 5 — Captura local
@@ -1346,6 +1359,9 @@ RemoteSession
 Implementar captura de tela Windows.
 
 Validar primeiro localmente.
+
+Implementado para o primeiro teste local: captura a tela primária por Qt, reduz até
+1280x720 e codifica em JPEG. A captura só começa durante uma sessão autorizada.
 
 ---
 
@@ -1361,11 +1377,15 @@ JPEG ou WebP
 
 Não enviar bitmap bruto indefinidamente.
 
+Implementado pelo relay com limite de 1 MiB por pacote.
+
 ---
 
 # 46. Fase 7 — Viewer
 
 Criar janela para renderizar tela remota.
+
+Implementado: a sessão autenticada abre um visualizador Qt separado.
 
 ---
 
@@ -1379,6 +1399,8 @@ MouseButton
 MouseWheel
 ```
 
+Implementado no Windows, somente enquanto o host mostra uma sessão autorizada ativa.
+
 ---
 
 # 48. Fase 9 — Teclado
@@ -1389,6 +1411,9 @@ Implementar:
 KeyDown
 KeyUp
 ```
+
+Implementado no Windows para teclas comuns; o host solta teclas e botões mantidos quando
+a sessão termina.
 
 ---
 
@@ -1406,7 +1431,10 @@ Adicionar posteriormente.
 
 # 51. Fase 12 — Criptografia completa
 
-Antes de disponibilizar externamente.
+Obrigatória antes de habilitar conexões entre computadores pela rede. Enquanto TLS e
+proteção de autenticação não estiverem implementados, o servidor deve continuar
+escutando exclusivamente em `127.0.0.1`, e a GUI deve identificar claramente o protótipo
+como local e não criptografado.
 
 ---
 
@@ -1498,95 +1526,36 @@ Antes de uma mudança arquitetural:
 
 ---
 
-# 57. Primeira tarefa para o agente
+# 57. Estado atual e próxima tarefa
 
-Começar criando:
-
-```text
-D1AssistServer
-D1Assist.exe
-```
-
-Objetivo exclusivo da primeira tarefa:
+Implementado para validação local no Windows:
 
 ```text
-1. servidor iniciar;
-2. cliente conectar;
-3. cliente enviar REGISTER_DEVICE;
-4. servidor gerar/recuperar public_id;
-5. servidor responder;
-6. cliente exibir public_id;
-7. cliente gerar senha temporária;
-8. duas instâncias com GUI funcionarem simultaneamente.
+registro e ID persistente
+CONNECT_REQUEST e relay
+consentimento explícito no dispositivo controlado
+autenticação pela senha temporária
+SESSION_START e SESSION_END
+captura JPEG, visualizador remoto, mouse e teclado
 ```
 
-Nesta primeira tarefa, a GUI já é obrigatória. Ainda NÃO implementar:
+Limites atuais: o servidor escuta somente em `127.0.0.1`; a comunicação não usa TLS;
+captura/controle de entrada funcionam no Windows; o viewer ainda não oferece clipboard,
+transferência de arquivos, áudio ou múltiplos monitores. Não usar pela LAN ou Internet.
 
-```text
-captura de tela
-mouse
-teclado
-P2P
-NAT traversal
-codec avançado
-transferência de arquivos
-```
-
-Depois implementar:
-
-```text
-CONNECT_REQUEST
-+
-senha
-+
-SESSION_START
-```
-
-antes de iniciar o streaming remoto.
+Próxima etapa antes de acesso entre computadores: implementar TLS e melhorar a
+autenticação para que a senha e os dados da sessão não trafeguem em texto puro.
 
 ---
 
-# 58. Estado desejado do primeiro marco
+# 58. Fluxo local atual e limite de uso
 
-Abrir duas instâncias:
+Abrir o servidor e duas instâncias no mesmo computador, usando arquivos de identidade
+diferentes. No controlador, inserir o ID e a senha temporária do dispositivo controlado.
+O computador chamado mostra um pedido de consentimento com opção negativa selecionada
+por padrão. Somente depois da aceitação e da validação da senha, abre-se o viewer e o
+controle de mouse/teclado.
 
-```text
-D1Assist.exe A
-
-Seu ID:
-834 221 557
-
-Senha:
-583921
-```
-
-e:
-
-```text
-D1Assist.exe B
-
-Seu ID:
-921 450 311
-
-Senha:
-174820
-```
-
-Na instância B:
-
-```text
-Conectar ao ID:
-834221557
-
-Senha:
-583921
-```
-
-Resultado:
-
-```text
-Connection authenticated.
-Session started.
-```
-
-Esse será o primeiro marco oficial do D1Assist.
+O usuário controlado mantém uma indicação visível e um botão para encerrar a sessão.
+Esse fluxo é apenas para desenvolvimento local: não liberar conectividade externa até a
+implementação e validação de TLS, autenticação segura e autorização.
