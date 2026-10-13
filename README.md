@@ -2,6 +2,16 @@
 
 Protótipo C++20 de suporte remoto autorizado. A interface gráfica Qt 6 faz parte do aplicativo desde o primeiro marco. No Windows, o protótipo permite registrar dispositivos, solicitar uma sessão por ID, exigir consentimento explícito e senha temporária, exibir a tela remota e enviar eventos de mouse e teclado durante a sessão.
 
+## Baixar para Windows
+
+**[Baixar D1Assist para Windows (cliente, servidor e dependências)](https://github.com/D1Systems/D1Assist/releases/latest/download/D1Assist-Windows-x64.zip)**
+
+O ZIP portátil inclui `D1Assist.exe`, `D1AssistServer.exe`, as DLLs do Qt e do runtime e os plugins necessários. Extraia o arquivo e execute os programas diretamente; não é necessário instalar Qt ou copiar DLLs manualmente. Cada nova tag `v*` cria uma Release com o pacote atualizado.
+
+O link ficará disponível após a publicação da primeira tag de versão `v*` (por exemplo, `v0.1.0`).
+
+> **Limite importante:** nesta versão, o servidor escuta somente em `127.0.0.1` e a comunicação não é criptografada. O pacote serve para testes locais no mesmo computador; ainda não permite suporte remoto entre computadores diferentes nem uso pela LAN/Internet.
+
 ## Compilar no Windows
 
 Com Visual Studio, Qt 6 (módulo Widgets) e CMake disponíveis no ambiente:
@@ -14,11 +24,20 @@ cmake --build build --config Debug
 Neste ambiente, o MinGW-w64 e Qt 6 estão disponíveis pelo MSYS2 e podem ser selecionados explicitamente:
 
 ```powershell
-cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_CXX_COMPILER="C:\msys64\mingw64\bin\g++.exe"
+cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_CXX_COMPILER="C:\msys64\mingw64\bin\g++.exe" -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
 O build MinGW inclui estaticamente o runtime C++ do cliente. Após a compilação, `windeployqt` copia as DLLs e plugins Qt, e o CMake também inclui dependências transitivas do Qt, dos plugins de imagem e do MinGW ao lado do aplicativo. Com MinGW, os executáveis serão `build\server\D1AssistServer.exe` e `build\D1Assist.exe`; o Visual Studio adiciona o diretório da configuração, normalmente `Debug`.
+
+Para gerar localmente o mesmo pacote portátil ZIP publicado nas Releases:
+
+```powershell
+cmake --build build --config Release
+cpack --config build\CPackConfig.cmake -C Release -B build\packages
+```
+
+O arquivo será criado em `build\packages\D1Assist-Windows-x64.zip`.
 
 O logotipo em `resources\D1AssistLogo.png` é distribuído ao lado do cliente para o ícone da janela Qt; `resources\D1Assist.ico` define o ícone incorporado aos executáveis Windows do cliente e do servidor.
 

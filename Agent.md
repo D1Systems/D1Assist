@@ -651,6 +651,8 @@ cmake -S . -B build
 cmake --build build --config Debug
 ```
 
+O pacote portátil ZIP para Windows inclui o cliente, o servidor e as dependências de runtime. Use CPack localmente; tags `v*` publicam o ZIP em uma GitHub Release.
+
 Compiladores:
 
 Windows:

@@ -127,3 +127,28 @@ if(WIN32)
 endif()
 
 add_subdirectory(server)
+
+install(TARGETS D1Assist D1AssistServer
+    RUNTIME DESTINATION .
+)
+
+if(WIN32)
+    install(DIRECTORY "$<TARGET_FILE_DIR:D1Assist>/"
+        DESTINATION .
+        FILES_MATCHING
+            PATTERN "*.dll"
+            PATTERN "*.manifest"
+            PATTERN "*.png"
+            PATTERN ".qt" EXCLUDE
+            PATTERN "CMakeFiles" EXCLUDE
+            PATTERN "Testing" EXCLUDE
+            PATTERN "_CPack_Packages" EXCLUDE
+            PATTERN "packages" EXCLUDE
+    )
+
+    set(CPACK_GENERATOR ZIP)
+    set(CPACK_PACKAGE_NAME "D1Assist-Windows-x64")
+    set(CPACK_PACKAGE_FILE_NAME "D1Assist-Windows-x64")
+    set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY TRUE)
+    include(CPack)
+endif()
